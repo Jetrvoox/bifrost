@@ -34,14 +34,24 @@ the missing half: Claude itself calls `view`/`create`/`str_replace`/
 application hosts and executes — client-side, so you control storage,
 size caps, expiration, and path-traversal protection.
 
-**Real open question, not yet resolved**: this is a Messages API tool.
-agent-harness spawns actual `claude` CLI processes (`bus/claude-stream.js`,
-`--print --resume`), not raw SDK `messages.create()` calls — whether the
-Claude Code CLI itself exposes `memory_20250818` to a headless session, or
-whether using it would mean a second, SDK-based code path alongside the
-CLI-spawn one, is **unconfirmed** and worth checking before assuming this
-slots in directly. Even if it doesn't slot in as-is, the *interface design*
-is worth copying regardless — see below.
+**Checked directly, resolved**: the Claude Code CLI does *not* expose
+`memory_20250818` — `claude --help`'s `--tools` flag documents "the
+built-in set" and no `Memory` tool is in it. What the CLI has instead is
+its own separate, differently-shaped mechanism: `--bare` mode's own
+description names **"auto-memory"** explicitly as a thing it skips,
+confirming it's a real, named, built-in feature — CLAUDE.md-adjacent,
+index-based rather than semantic. Since `claude-stream.js`'s spawn passes
+no `env` override (confirmed earlier), every agent-harness persona already
+inherits this exact mechanism — it's the same system that wrote this very
+research doc's cross-links. So the real question isn't "can the API tool
+be wired in" (it can't, without switching off the CLI-spawn model
+entirely, which is a much bigger change than this is worth) — it's
+whether each persona is actually using Claude Code's own Auto Memory
+well today, which hasn't been separately audited. The API tool's
+*interface design* — `view`/`create`/`str_replace`/`insert`/`delete`/
+`rename` on a scoped path, the injected "always view memory first, assume
+interruption" protocol prompt — is still worth reading as a reference for
+shape, just not as something to integrate directly.
 
 Two things worth lifting even without the literal tool:
 
@@ -182,6 +192,7 @@ embedding store. The actionable short list, smallest first: (1) A-Mem's
 backlink-old-memories habit — no infrastructure change, just a practice;
 (2) SAGE-style cheap novelty check before a memory-proposal card reaches
 the review channel; (3) Mem0-style ADD/UPDATE/DELETE/NOOP as the real
-answer to the still-open partial-promotion question; (4) the Anthropic
-memory tool, once/if it's confirmed to actually be reachable from a
-Claude Code CLI session rather than only the raw Messages API.
+answer to the still-open partial-promotion question; (4) auditing whether
+each agent-harness persona is actually using Claude Code's own built-in
+Auto Memory well — confirmed real and already inherited by every spawned
+session, not something to build or bolt on, just something to check.
