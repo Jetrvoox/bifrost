@@ -69,6 +69,18 @@ solved ones.
 - **A persona upgrade for the default assistant**: give it a voice and
   substance shaped by this system's own accumulated work, instead of a
   generic assistant tone bolted onto a system-specific job description.
+- **Dynamic model routing by task complexity**: every agent currently runs
+  at one fixed model/effort setting, uniform across all agents and turns.
+  The idea is picking model/effort per turn based on how complex the
+  actual task looks, rather than one static setting for everything.
+- **Fanout worker dispatch**: pass a set of genuinely independent
+  sub-tasks instead of one, run one worker per entry in parallel, resolve
+  as a group, with each worker's live cost/token numbers surfaced as its
+  own card. Real design work done, not yet built — the open question was
+  mechanism (a directive the bus itself parses and clamps, not a tool a
+  session could hand looser permissions to on its own) and process shape
+  (each worker as its own standalone process, the only way to get honest
+  live-per-worker cost data rather than something bundled and delayed).
 
 ### ultracommands
 

@@ -139,6 +139,47 @@ source, not restated here. The Layer 3 gap is a deliberate accepted
 tradeoff (documented, revisit if the platform gate ever lifts), not an
 oversight.
 
+## Identity & roles
+
+Every Discord message resolves to one of four roles before anything else
+happens — `agents/identities.json` maps a Discord user ID to
+owner/trusted/friend/base, config-assigned only, never inferred from chat.
+A central `minRole` gate in `bus/server.js` is reused across every admin
+or destructive route, so that check lives in one place instead of being
+re-implemented per route.
+
+Below `trusted`, a message doesn't get a real Claude Code session at
+all — it's routed through `bus/lib/converse.js`, a structurally tool-less
+dispatch path. That distinction matters: passing an empty allowed-tools
+list to a real session does *not* actually block tool use (confirmed by
+direct testing), so "no tools" has to be a genuinely different code path,
+not a flag on the normal one.
+
+Trigger for building this: giving a friend's own AI agent direct access
+to this system without a human relaying every message required a real
+per-user identity model first — before this, any Discord guild member had
+full owner-equivalent access, including destructive commands.
+
+Known, disclosed gap: a channel already set to full-auto permission mode
+for the owner's convenience extends that same permissiveness to a trusted
+identity in that channel too — there's no per-identity permission override
+yet, on purpose (building that into the shared dispatch core risked a live
+regression to the owner's own daily path under time pressure).
+
+## Bot-to-bot conversation without a human relay
+
+Two LLM-backed agents — Mímir here, and a friend's separately-built agent
+on their own system — can talk to each other directly in Discord, with a
+designed backstop against the two of them just replying to each other
+forever.
+
+A turn budget (a fixed number of automatic replies per human check-in) is
+the hard backstop, but the real stop condition is semantic, not just the
+count running out: each reply is asked to honestly judge whether it added
+anything new, signaled through a fenced status block the bus parses. A
+"nothing new" verdict zeroes the remaining budget immediately rather than
+waiting for it to run out.
+
 ## Other real pieces
 
 - **A structured cross-project issue tracker** — outage detection plus a
@@ -163,3 +204,9 @@ similar
 - Use a real cross-platform UUID source (`crypto.randomUUID()`), not a
   Linux-specific one (`/proc/sys/kernel/random/uuid`) — the latter fails
   silently rather than loudly on Windows, which is worse.
+- A `cmd.exe /c` wrapper around every `claude` spawn was originally built
+  for an npm-installed `.cmd` shim, but a native package-manager `.exe`
+  install doesn't need it — and leaks a visible terminal window through it
+  regardless of `windowsHide`. Detected once at module load rather than
+  assumed, so the fix is correct on either install type instead of just
+  the one that was actually tested.

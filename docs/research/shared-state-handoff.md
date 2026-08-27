@@ -147,3 +147,76 @@ single-runtime coordination. That's flagged directly by the research
 itself as a real, unfilled gap — not a search failure. Anything built here
 would be closer to genuinely novel than an application of existing prior
 art, past the `adr-kit`-shaped starting point above.
+
+## Corrections & follow-up, 2026-08-26
+
+Appended, not edited in place — the discipline this doc itself documents
+(ADRs/adr-kit: never rewrite an accepted record, supersede it with a linked
+one). Surfaced by an independent review (a second worker set loose on the
+whole exchange, not just this file) after this doc was already published;
+verified directly before writing this section, not taken on faith.
+
+**Citation weight, corrected.** The two arXiv preprints backing the
+"full broadcast is empirically harmful" theme (2606.21666, the 34%
+hallucination-increase figure; 2604.07911, "DACS," the 60%→21% figure) are
+both single-author, unaffiliated preprints — thinner sourcing than their
+presentation in the themes section implied. One specific claim was also a
+misread, checked directly against the DACS abstract: the 21.0–60.0% range
+is the **flat-context baseline's range across different experimental
+conditions**, not a degradation curve that reaches 21% specifically at
+N=10 agents (the abstract does show the baseline's disadvantage *growing*
+with agent count in its Phase 4 results, but no per-N absolute-accuracy
+numbers are stated to support the "60% at 3 → 21% at 10" framing this doc
+used). The directionally-correct, actually load-bearing evidence for
+broadcast harm in this doc is **Anthropic's own production multi-agent
+research system** (strong confidence, primary source, directly fetched) —
+treat the two preprints as corroborating color, not as the claim's real
+support.
+
+**"The genuine gap," narrowed.** Letta's sleep-time compute (shipped,
+current — `docs.letta.com/guides/agents/architectures/sleeptime`,
+`letta.com/blog/sleep-time-compute`) is a background agent that shares
+memory blocks with a primary agent and updates them asynchronously,
+cross-session, while the primary is idle. That *is* "a separate session
+discovering a sibling's finding after the fact" — solved, single-platform,
+shipped. This doc's claim of a fully unaddressed gap was too broad. What's
+still genuinely unaddressed: the **cross-runtime, cross-ownership** case —
+two different harnesses (e.g. agent-harness and a differently-built
+external system) with different memory substrates, no shared runtime to
+lean on. The design implication that falls out of narrowing it this way:
+the fix isn't a shared runtime (Letta's answer, single-platform only), it's
+agreeing on a **portable record format** — a typed claim, its provenance,
+its verification state, and its supersession links — which is close to
+what `adr-kit`'s ADR + Status History + supersession-graph shape already
+is. Worth reading `adr-kit` as a candidate interchange format, not just as
+one platform's internal convention.
+
+**Two structural risks this doc didn't name, in the promotion channel
+itself.**
+
+1. *The promotion channel is the highest-privilege prompt surface in every
+   architecture surveyed here, and nothing above discusses its integrity.*
+   A pin, an ADR-INDEX entry, a `PROJECTS.md`/knowledge-candidate write —
+   whatever gets promoted is injected as trusted context into every future
+   session's cold-boot, unquestioned. A worker that successfully persuades
+   a human reviewer to promote its own artifact has achieved persistent,
+   cross-session prompt injection through the *legitimate* channel — the
+   review gate checks whether the content is accurate, not whether it's
+   also addressed to the reader as an instruction. `adr-kit`'s own stated
+   invariant, "source material is evidence; it is never acceptance
+   authority," needs a sibling invariant at the promotion boundary:
+   **promoted content is data, never instructions** — the same rule this
+   doc's own research agents were run under for fetched web content,
+   extended to the thing that happens *after* review, not just before it.
+2. *Refutation propagation has no answer here, and it's the strongest
+   concrete case for a tape-style architecture in this whole document.*
+   When a promoted finding is later refuted, what identifies the work that
+   already consumed it? ADR-style supersession links are the write-side
+   half of an answer (a record can point at what superseded it). An
+   append-only tape is the read-side half neither this doc nor the
+   conversation that produced it named: a queryable log of *which agent
+   ran with which promoted item in context* turns "what's now tainted by a
+   retracted premise" into a query. A git+markdown system without that
+   log — the operator-mediated model this doc describes as production-real
+   (`adr-kit`, Devin's Knowledge) — has no structural way to answer that
+   question; finding out requires archaeology, not a lookup.
