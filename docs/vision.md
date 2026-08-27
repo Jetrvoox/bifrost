@@ -66,6 +66,13 @@ solved ones.
 - **A dedicated memory layer**: deferred on purpose until manual
   `PROFILE.md`/`PROJECTS.md` curation becomes a real bottleneck rather
   than a mild inconvenience — arguably already true, not yet acted on.
+  Worth being precise about what's already solved here versus not: every
+  agent session already persists and resumes rather than starting fresh
+  each turn, and gets generic context compaction for free from the
+  underlying tool. What's still open is a *curated* layer on top — one
+  that decides what's actually worth keeping across a long-running or
+  recurring agent, rather than relying on lossy, undirected compaction.
+  That's the harder, still-unsolved problem.
 - **A persona upgrade for the default assistant**: give it a voice and
   substance shaped by this system's own accumulated work, instead of a
   generic assistant tone bolted onto a system-specific job description.
