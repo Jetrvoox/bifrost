@@ -72,7 +72,10 @@ solved ones.
   underlying tool. What's still open is a *curated* layer on top — one
   that decides what's actually worth keeping across a long-running or
   recurring agent, rather than relying on lossy, undirected compaction.
-  That's the harder, still-unsolved problem.
+  That's the harder, still-unsolved problem. A survey of how other systems
+  approach exactly this — Anthropic's own memory tool, and specific
+  curation ideas worth borrowing from Mem0/Zep/A-Mem/Generative Agents —
+  is in [`docs/research/agent-memory-architectures.md`](research/agent-memory-architectures.md).
 - **A persona upgrade for the default assistant**: give it a voice and
   substance shaped by this system's own accumulated work, instead of a
   generic assistant tone bolted onto a system-specific job description.
