@@ -139,6 +139,15 @@ source, not restated here. The Layer 3 gap is a deliberate accepted
 tradeoff (documented, revisit if the platform gate ever lifts), not an
 oversight.
 
+Worth logging alongside these three, from a real external incident rather
+than a hypothetical: a well-designed external-facing credential model
+doesn't protect against a compromise of the operator's own *internal*
+tooling if that tooling has standing privilege into the same secrets — see
+[`docs/research/agent-infra-ecosystem-survey.md`](research/agent-infra-ecosystem-survey.md#3-least-privilege-your-own-internal-tooling-not-just-the-external-boundary).
+Whatever touches Discord/GitHub tokens here deserves the same
+zero-standing-privilege discipline this system already applies at the
+external boundary, not an assumption that Layer 1/2 cover it by extension.
+
 ## Identity & roles
 
 Every Discord message resolves to one of four roles before anything else

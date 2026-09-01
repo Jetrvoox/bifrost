@@ -91,6 +91,10 @@ solved ones.
   session could hand looser permissions to on its own) and process shape
   (each worker as its own standalone process, the only way to get honest
   live-per-worker cost data rather than something bundled and delayed).
+  Claude Code's own delegate-vs-fork split and its harness-enforced
+  (not prompt-enforced) tool-pool filtering are directly relevant prior
+  art here — see
+  [`docs/research/agent-infra-ecosystem-survey.md`](research/agent-infra-ecosystem-survey.md#5-fork-full-context-vs-delegate-isolated-summary-only-are-different-primitives).
 
 ### ultracommands
 
@@ -120,8 +124,11 @@ Explicitly declined, not just deferred: a standing capability audit baked
 into permanent command logic (a one-time document does this job fine —
 recurring logic would be solving a problem that isn't recurring); a
 knowledge-graph or vector-RAG memory layer (no retrieval-quality problem
-has actually been observed with the current file-based memory); a
-dedicated human-facing control-plane dashboard (existing logs, a health
+has actually been observed with the current file-based memory — and if
+that trigger ever fires, the reference shape to reach for is deferred,
+budget-gated graph construction rather than eager extraction, see
+[`docs/research/agent-infra-ecosystem-survey.md`](research/agent-infra-ecosystem-survey.md#1-defer-expensive-structure-dependent-computation-to-query-time-budget-gated));
+a dedicated human-facing control-plane dashboard (existing logs, a health
 endpoint, and agent-harness's own health panel already cover this at
 current scale).
 
