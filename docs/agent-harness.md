@@ -175,6 +175,16 @@ identity in that channel too — there's no per-identity permission override
 yet, on purpose (building that into the shared dispatch core risked a live
 regression to the owner's own daily path under time pressure).
 
+Two real `friend`-tier identities exist as of 2026-09-02 — but the tier
+itself has a confirmed no-op: nothing anywhere actually checks a
+`friend`-specific `minRole` gate yet, so in practice it behaves exactly
+like whatever `base` already allowed. Disclosed, not silently assumed
+fixed. Separately: the existing typed-yes/no approval flow for a pending
+tool call doesn't check *who* is replying "yes" at all — any Discord user
+present in that channel currently gets owner-tier approval authority over
+someone else's pending request, not just the owner. Both are named as one
+real design conversation still needed, not two independent small patches.
+
 ## Bot-to-bot conversation without a human relay
 
 Two LLM-backed agents — Mímir here, and a friend's separately-built agent
@@ -189,6 +199,67 @@ anything new, signaled through a fenced status block the bus parses. A
 "nothing new" verdict zeroes the remaining budget immediately rather than
 waiting for it to run out.
 
+## Memory across resets — tape, digest, resume
+
+Every agent session already persists and resumes rather than starting
+fresh each turn, and gets generic context compaction for free from the
+underlying CLI. What was missing until 2026-09-04 was the curated layer on
+top: something that decides what's actually worth carrying *across* a
+reset, rather than a fresh session simply losing whatever unbounded
+compaction didn't keep.
+
+```
+ every turn's metrics land
+            │
+            ▼
+  usage crosses 80,000 tokens ──── proactive trigger, well ahead
+            │                      of the hard backstop below
+            ▼
+  digestChannel() summarizes everything new since the channel's
+  last digest, stored in harness.db (channel, agent, sinceTs, summary)
+            │
+            ▼
+  resetContext() — clean turn boundary, --autocompact 100000 is
+  the hard backstop that should rarely be the thing that actually fires
+            │
+            ▼
+  first message after the reset: the latest digest is prepended —
+  the one thing a fresh session can no longer see natively
+```
+
+A real process kill triggers the same digest, independent of the token
+threshold, so a crash or restart never silently drops the gap between
+digests. The "80,000 / 100,000" numbers aren't arbitrary: `--autocompact`
+has a confirmed hard floor of 100,000 tokens by direct testing, which
+means a literal "reset at 8% of context" reading (the original framing)
+was never reachable through that flag under any model's real window size —
+resolved to two concrete absolute numbers instead of a percentage.
+Deliberately not yet built: a human-facing digest-browsing UI — what
+shipped is Mímir's own continuity on resume, not a dashboard for the
+owner to read digests directly. That's a reasonable v2, not a gap in the
+mechanism itself.
+
+## Browsing beyond the active bus — a real Discord directory
+
+Before 2026-09-04, finding "which channel is hime actually in" meant
+grepping raw JSON filenames under `bus/data/` — there was a real, working
+user-name-to-Discord-ID directory (built passively from chat activity),
+but nothing equivalent for channels or guilds.
+
+The fix passively snapshots every guild the Discord bot can see (real
+channels, real categories, real members) whenever something changes on
+Discord's side, and cross-references that snapshot against the bus's own
+channel list to mark each one active/inactive. The client got a real
+navigation model to match — a narrow server-icon rail separate from the
+regular channel list, a guild's channels grouped into Discord's actual
+categories rather than one flat list, and an inactive channel opening a
+preview-only panel (name/topic, no chat) rather than pretending it's live.
+Confirmed live against two real guilds' real category structure; clicking
+through a preview channel creates zero new bus channels, matching the
+explicit "no side effect from browsing" requirement. Not yet built: live
+updates without a page reload (the directory loads once at startup), and
+richer preview content than plain text.
+
 ## Other real pieces
 
 - **A structured cross-project issue tracker** — outage detection plus a
@@ -199,6 +270,35 @@ waiting for it to run out.
   tab.
 - **An MCP bridge** — exposes this system's own capabilities as MCP tools,
   so other MCP-aware clients can reach in.
+- **Workspace click-to-preview** (scoped, not built) — a generic slide-
+  over panel already exists in the client for three honestly-labeled
+  placeholders (terminal, browser preview, a "more actions" menu); the
+  real remaining work is making it accept rich content and wiring real
+  attachments/memory cards into it, not building the panel itself.
+- **A real git client inside the workspace** (scoped, not built) — branch
+  list/switch, commit history browsing, staging and committing, repo
+  browsing at a given commit, from the client rather than just the
+  existing per-turn diff view. Flagged explicitly, not blocking: this is a
+  materially bigger trust surface than anything else in this list — the
+  client becomes a second place that can mutate real repo state, not just
+  observe it — and needs its own decision on what gets an extra
+  confirmation step before any of it ships.
+
+## A per-user model, just starting
+
+As of 2026-09-05, early scaffolding exists for something none of the above
+needed: a per-user file (`agents/users/<discord-snowflake>/model.md`) that
+accumulates what Mímir has actually learned about one specific person,
+promoted through evidence (a correction holds across independent sessions,
+gets acted on, earns a real 🎯) rather than loaded wholesale from day one.
+What's real today is intentionally small — a durable log of every tool
+call the permission gate silently denied (previously console-log only,
+now a real append-only file), the directory boundary that makes it
+structurally impossible to load one user's model while serving another,
+and a loader that reads a user's promoted entries. Nothing yet writes to a
+model file, and nothing yet feeds a loaded entry into a live conversation
+— this is Day 1 of a longer, deliberately paced build, not a shipped
+feature.
 
 ## Windows-specific gotchas worth keeping if you're building something
 similar

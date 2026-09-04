@@ -39,18 +39,43 @@ roadmap-as-marketing; it's the real backlog.
                       to run unattended)
 ```
 
+## Closed since last update
+
+One item below stopped being open. Noted here rather than silently
+dropped from the list, since the gap it closed was named explicitly
+enough elsewhere in this repo that leaving it in a "not yet built" list
+would read as still-true when it isn't:
+
+- **agent-harness's dedicated memory layer** (2026-09-04) — the harder,
+  unsolved half of memory this doc used to describe (deciding what's
+  worth keeping across a reset, not just compacting raw context) is real
+  now: a tape → digest → resume pipeline. Full detail in
+  [`docs/agent-harness.md`](agent-harness.md#memory-across-resets--tape-digest-resume).
+  What's still open, correctly scoped as v2 rather than a gap in the
+  mechanism: a human-facing digest-browsing UI. The comparative survey
+  that motivated this item stays useful background even with the
+  immediate gap closed:
+  [`docs/research/agent-memory-architectures.md`](research/agent-memory-architectures.md).
+
 ## Per-project direction
 
 ### yggdrasil
 
-Currently a manually curated index. The parked next step is a "second
-brain" that doesn't just store state but actively reasons about *why* the
-owner made a given decision, gathers supporting evidence, and asks when
-it isn't sure — a genuinely different job from being read-and-trusted
-context. Not scoped yet: staleness detection (how does it know a stored
-belief is outdated?) and memory architecture (what actually lives here
-versus in agent-harness's own memory layer?) are both open questions, not
-solved ones.
+Currently a manually curated index — see
+[`docs/yggdrasil.md`](yggdrasil.md) for how that index itself was
+restructured in September once a single growing file stopped being cheap
+to read. The parked next step is a "second brain" that doesn't just store
+state but actively reasons about *why* the owner made a given decision,
+gathers supporting evidence, and asks when it isn't sure — a genuinely
+different job from being read-and-trusted context. Still explicitly
+parked pending a stated trigger (not started early), but real design work
+landed while it waited: a raw/synthesized-wiki split borrowed from outside
+research, evaluated and confirmed correct rather than just plausible — the
+value isn't stylistic, it's that a bad AI-authored edit stays recoverable
+by re-deriving from the untouched raw layer instead of permanently
+corrupting the only copy of a claim. Staleness detection (how does it know
+a stored belief is outdated?) and the boundary against agent-harness's own
+memory layer above are both still open questions, not solved ones.
 
 ### agent-harness
 
@@ -63,19 +88,24 @@ solved ones.
   a message is fixed per agent. The open question is whether a dedicated
   router agent should decide that dynamically instead — not yet decided
   who or what owns that decision.
-- **A dedicated memory layer**: deferred on purpose until manual
-  `PROFILE.md`/`PROJECTS.md` curation becomes a real bottleneck rather
-  than a mild inconvenience — arguably already true, not yet acted on.
-  Worth being precise about what's already solved here versus not: every
-  agent session already persists and resumes rather than starting fresh
-  each turn, and gets generic context compaction for free from the
-  underlying tool. What's still open is a *curated* layer on top — one
-  that decides what's actually worth keeping across a long-running or
-  recurring agent, rather than relying on lossy, undirected compaction.
-  That's the harder, still-unsolved problem. A survey of how other systems
-  approach exactly this — Anthropic's own memory tool, and specific
-  curation ideas worth borrowing from Mem0/Zep/A-Mem/Generative Agents —
-  is in [`docs/research/agent-memory-architectures.md`](research/agent-memory-architectures.md).
+- **A per-user model** (new direction, started 2026-09-05; not the same
+  thing as the memory layer resolved above): that layer governs one
+  channel's continuity across a reset; this is about what Mímir actually
+  learns about one *specific person* over time, versus applying the same
+  learned behavior to everyone talking to it. Early and deliberately
+  paced — see [`docs/agent-harness.md`](agent-harness.md#a-per-user-model-just-starting)
+  for exactly how little is real yet and why it's staying that way for
+  now (a stated anti-pattern in the underlying design: don't add a second
+  memory mechanism before the first feedback loop — model → context →
+  signal → weekly review → model — is actually closed and has proven
+  itself).
+- **A real git client inside the client workspace**: branch switch, commit
+  history browsing, staging/committing, and repo browsing at a given
+  commit, not just the existing per-turn diff view. Scoped, not built —
+  and flagged on purpose as a materially bigger trust surface than
+  anything else on this list, since it's a second place able to mutate
+  real repo state rather than only observe it. Needs its own decision on
+  confirmation steps before any of it ships.
 - **A persona upgrade for the default assistant**: give it a voice and
   substance shaped by this system's own accumulated work, instead of a
   generic assistant tone bolted onto a system-specific job description.

@@ -139,4 +139,10 @@ reviewer specifically — run at high effort. This was fitted, not assumed:
 a fixed benchmark suite (`/ultrabenchmark`, a fixture corpus with known-
 correct expected outcomes, run through the real scripts unchanged) is
 what a change like this gets checked against, rather than trusted on
-reasoning alone.
+reasoning alone. As of 2026-09-01, CI checks the benchmark-results schema
+itself and detects whether the Workflow tool is actually available in the
+environment a run happened in, rather than assuming it — the benchmark
+suite verifying its own inputs, not just the commands it exists to check.
+`/ultrainfra` and `/ultraonboard` gained the same `id`/`status` tracking
+mechanism the rest of the suite already had; real fixture coverage for
+those two specifically is still open, not attempted alongside that fix.
